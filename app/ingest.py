@@ -3,7 +3,7 @@ import uuid
 from qdrant_client.models import PointStruct
 
 from embedder import embed
-from schema import client, COLLECTION_NAME
+from schema import client, COLLECTION_NAME, create_collection
 from doc_loader import load_docx
 from chunking import chunk_text
 
@@ -62,6 +62,9 @@ def ingest():
                 }
             )
         )
+
+    # Ensure the collection exists (creates it if missing)
+    create_collection(vector_size=384)
 
     print("📤 Uploading to Qdrant...")
 
