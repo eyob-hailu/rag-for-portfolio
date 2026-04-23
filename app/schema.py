@@ -1,5 +1,4 @@
 from qdrant_client.models import VectorParams, Distance
-from qdrant_db import client
 from qdrant_client import QdrantClient
 import os
 from dotenv import load_dotenv

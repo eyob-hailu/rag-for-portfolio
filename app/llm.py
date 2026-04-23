@@ -1,17 +1,19 @@
 import os
-from openai import OpenAI
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def generate_answer(context, query):
     prompt = f"""
-You are a helpful assistant.
+You are an AI assistant for Eyob's portfolio website. 
+Answer the user's question accurately using ONLY the information from the context below. 
 
-Use the context below to answer the question.
+IMPORTANT RULES:
+- Answer naturally. DO NOT say "Based on the provided context", "According to the context", or anything similar. Just give the answer directly.
+- If the answer is not in the context, politely say that you don't know.
 
 Context:
 {context}
@@ -21,7 +23,7 @@ Question:
 """
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="llama-3.1-8b-instant",
         messages=[
             {"role": "user", "content": prompt}
         ]

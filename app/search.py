@@ -1,12 +1,15 @@
-from schema import client, COLLECTION_NAME
-from embedder import embed
+from app.schema import client, COLLECTION_NAME
+from app.embedder import embed
 
 
-def search(query: str):
-    results = client.search(
+def query_points(query: str):
+    vector = embed(query)
+
+    results = client.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=embed(query),
-        limit=5
+        query=vector,
+        limit=5,
+        with_payload=True
     )
 
-    return [r.payload["text"] for r in results]
+    return results.points

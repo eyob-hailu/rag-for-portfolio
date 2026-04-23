@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from search import search
-from llm import generate_answer
+from app.search import query_points
+from app.llm import generate_answer
 
 app = FastAPI()
 
@@ -13,7 +13,10 @@ class Query(BaseModel):
 @app.post("/rag")
 def rag(query: Query):
 
-    docs = search(query.query)
+    results = query_points(query.query)
+
+    docs = [r.payload["text"] for r in results]
+
     context = "\n".join(docs)
 
     answer = generate_answer(context, query.query)
