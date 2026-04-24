@@ -2,10 +2,10 @@ import os
 import uuid
 from qdrant_client.models import PointStruct
 
-from embedder import embed
-from schema import client, COLLECTION_NAME, create_collection
-from doc_loader import load_docx
-from chunking import chunk_text
+from app.embedder import embed_texts
+from app.schema import get_client, COLLECTION_NAME, create_collection
+from app.doc_loader import load_docx
+from app.chunking import chunk_text
 
 
 def ingest():
@@ -42,32 +42,33 @@ def ingest():
         return
 
     print(f"🧠 Embedding {len(all_chunks)} chunks...")
+    vectors = embed_texts(all_chunks)
+
+    if not vectors:
+        raise ValueError("❌ No vectors returned by embedding API")
+
+    vector_size = len(vectors[0])
+    for vector in vectors:
+        if len(vector) != vector_size:
+            raise ValueError("❌ Inconsistent embedding dimensions returned by API")
+
+    # Ensure the collection exists (creates it if missing)
+    create_collection(vector_size=vector_size)
 
     # --- BUILD POINTS ---
     points = []
-
-    for chunk in all_chunks:
-        vector = embed(chunk)
-
-        if len(vector) != 384:
-            raise ValueError(f"❌ Invalid embedding size: {len(vector)} (expected 384)")
-
+    for chunk, vector in zip(all_chunks, vectors):
         points.append(
             PointStruct(
                 id=str(uuid.uuid4()),
-                vector=vector,   # ✅ UNNAMED VECTOR (IMPORTANT)
-                payload={
-                    "text": chunk,
-                    "source": "portfolio-doc"
-                }
+                vector=vector,
+                payload={"text": chunk, "source": "portfolio-doc"},
             )
         )
 
-    # Ensure the collection exists (creates it if missing)
-    create_collection(vector_size=384)
-
     print("📤 Uploading to Qdrant...")
 
+    client = get_client()
     client.upsert(
         collection_name=COLLECTION_NAME,  # "portfolio-collection"
         points=points,
