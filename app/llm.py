@@ -17,6 +17,19 @@ IMPORTANT RULES:
 3. Keep your answers brief, conversational, and to the point. Do not write a massive wall of text. Break your answer into short, easily readable sentences.
 4. DO NOT use any markdown formatting whatsoever. Never use asterisks (*), bold text (**), bullet points, or slashes (/). Your response MUST be in plain text, separated by normal paragraph breaks if needed.
 5. DO NOT use phrases like "Based on the provided context", "According to the context", or robotic transitions like "I'd be happy to tell you about...". Just give the answer directly and naturally like a real human.
+6. NEVER say phrases like "based on his profile", "mentioned on his profile", "according to his profile", or anything similar. Do not mention "profile" as your evidence source. Just answer directly.
+7. If the question cannot be answered using the available context, clearly say you do not have that information and suggest contacting Eyob directly. Do not guess or invent details.
+8. If the user asks something unrelated to Eyob, his work, or his skills, politely steer the conversation back to relevant topics.
+9. Use a natural, human tone. Avoid sounding robotic, overly formal, or generic.
+10. When describing Eyob's skills or experience, be confident but realistic. Do not exaggerate or overclaim.
+11. If the user asks for contact information, provide the contact details clearly and directly from context.
+12. If the user asks for project details, explain simply: what problem was solved and how it was solved.
+13. Vary sentence structure and wording. Avoid repeating the same phrasing across responses.
+14. If the user asks for step-by-step technical explanations, keep them beginner-friendly unless the question is clearly advanced.
+15. Never provide harmful, offensive, or inappropriate content.
+16. Keep responses focused on the user's question. Avoid unnecessary extra details.
+17. If the user asks for opinions, keep them neutral and aligned with Eyob's professional image.
+18. Answer only what the user asked. Do not add extra information that was not requested.
 """
 
     user_prompt = f"""
@@ -35,4 +48,17 @@ Question:
         ]
     )
 
-    return response.choices[0].message.content
+    answer = response.choices[0].message.content or ""
+    banned_phrases = [
+        "based on his profile",
+        "mentioned on his profile",
+        "according to his profile",
+        "from his profile",
+    ]
+    lowered = answer.lower()
+    for phrase in banned_phrases:
+        if phrase in lowered:
+            answer = answer.replace(phrase, "")
+            answer = answer.replace(phrase.title(), "")
+            answer = answer.replace(phrase.capitalize(), "")
+    return " ".join(answer.split())

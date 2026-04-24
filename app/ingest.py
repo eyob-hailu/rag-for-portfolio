@@ -9,48 +9,55 @@ from app.chunking import chunk_text
 
 
 def ingest():
-    print("🚀 Starting ingestion...")
+    print("Starting ingestion...")
 
     # --- PATH ---
     base_dir = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", "data")
     )
 
-    print(f"📂 Loading documents from: {base_dir}")
+    print(f"Loading documents from: {base_dir}")
 
     if not os.path.exists(base_dir):
-        print(f"❌ Data folder not found: {base_dir}")
+        print(f"Data folder not found: {base_dir}")
         return
 
     docs = load_docx(base_dir)
 
     if not docs:
-        print("❌ No documents found!")
+        print("No documents found.")
         return
 
-    print(f"📄 Found {len(docs)} document(s)")
+    print(f"Found {len(docs)} document(s)")
 
     # --- CHUNKING ---
     all_chunks = []
     for i, doc in enumerate(docs):
         chunks = chunk_text(doc)
-        print(f"✂️ Doc {i+1}: {len(chunks)} chunks")
+        print(f"Doc {i+1}: {len(chunks)} chunks")
         all_chunks.extend(chunks)
 
     if not all_chunks:
-        print("❌ No chunks generated!")
+        print("No chunks generated.")
         return
 
-    print(f"🧠 Embedding {len(all_chunks)} chunks...")
-    vectors = embed_texts(all_chunks)
+    print(f"Embedding {len(all_chunks)} chunks...")
+    try:
+        vectors = embed_texts(all_chunks)
+    except RuntimeError as exc:
+        print(f"Embedding error: {exc}")
+        print("Set EMBEDDING_PROVIDER and the matching API key/model in .env, then rerun.")
+        return
 
     if not vectors:
-        raise ValueError("❌ No vectors returned by embedding API")
+        print("No vectors returned by embedding API.")
+        return
 
     vector_size = len(vectors[0])
     for vector in vectors:
         if len(vector) != vector_size:
-            raise ValueError("❌ Inconsistent embedding dimensions returned by API")
+            print("Inconsistent embedding dimensions returned by API.")
+            return
 
     # Ensure the collection exists (creates it if missing)
     create_collection(vector_size=vector_size)
@@ -66,7 +73,7 @@ def ingest():
             )
         )
 
-    print("📤 Uploading to Qdrant...")
+    print("Uploading to Qdrant...")
 
     client = get_client()
     client.upsert(
@@ -75,7 +82,7 @@ def ingest():
         wait=True
     )
 
-    print("✅ Ingestion complete!")
+    print("Ingestion complete.")
 
 
 if __name__ == "__main__":
