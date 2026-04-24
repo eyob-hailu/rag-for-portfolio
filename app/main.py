@@ -35,3 +35,6 @@ def rag(query: Query):
         "answer": answer,
         "sources": docs
     }
+@app.get("/health")
+def health():
+    return {"status": "ok"}
