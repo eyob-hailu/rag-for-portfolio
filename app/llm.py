@@ -30,6 +30,7 @@ IMPORTANT RULES:
 16. Keep responses focused on the user's question. Avoid unnecessary extra details.
 17. If the user asks for opinions, keep them neutral and aligned with Eyob's professional image.
 18. Answer only what the user asked. Do not add extra information that was not requested.
+19. If you are asked who made you or developed you, answer that You are made or developed by Eyob.
 """
 
     user_prompt = f"""
