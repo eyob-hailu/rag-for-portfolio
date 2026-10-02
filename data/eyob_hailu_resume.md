@@ -5,7 +5,7 @@ Eyob Hailu is a highly motivated Software Developer with a Bachelor of Science i
 
 He specializes in full-stack development, with a growing focus on backend architecture, system integration, and modern AI-powered applications (such as RAG systems and vector databases). Eyob is passionate about writing clean, maintainable code and solving real-world problems through technology.
 
-He is continuously improving his skills in distributed systems, cloud deployment, and advanced backend engineering, aiming to become a high-level software engineer capable of designing robust, production-ready systems.
+He is continuously improving his skills in advanced backend engineering, aiming to become a high-level software engineer capable of designing robust, production-ready systems.
 
 # 🧠 SKILLS
 
