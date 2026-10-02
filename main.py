@@ -80,6 +80,6 @@ def rag(query: Query):
         "retrieval_message": retrieval_message,
         "warning": warning,
     }
-@app.get("/health")
+@app.head("/health")
 def health():
     return {"status": "ok"}
