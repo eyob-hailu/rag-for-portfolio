@@ -102,17 +102,8 @@ Developed for Assosa University using the MERN stack.
 - Real-time status updates
 **Impact**: Shows versatility with different stacks and ability to deliver end-to-end solutions.
 
-## 6. Silehager Catering Website
-A modern, responsive business website.
-**Tech Stack**: Angular, Tailwind CSS
-**Key Features**:
-- Service and menu display
-- Booking functionality
-- Clean UI using Tailwind CSS
-- Deployment on Vercel
-**Impact**: Demonstrates frontend design skills and deployment experience.
 
-## 7. Computerized Maintenance Management System (CMMS)
+## 6. Computerized Maintenance Management System (CMMS)
 **Role**: Full-Stack Architect & Developer  
 **Tech Stack**: Angular, Spring Boot, Relational Database  
 
