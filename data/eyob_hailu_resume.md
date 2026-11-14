@@ -3,7 +3,7 @@
 
 Eyob Hailu is a highly motivated Software Developer with a Bachelor of Science in Computer Science, graduating with a CGPA of 3.80 (Great Distinction) from Assosa University. He combines strong academic performance with hands-on industry experience at Hibret Bank, where he builds scalable enterprise systems.
 
-He specializes in full-stack development, with a deep focus on backend architecture, system integration, enterprise security, and modern AI-powered applications (such as RAG systems and vector databases). Eyob is also an open-source author and developer, notably the creator of **express-spring-security**, a published NPM library bringing enterprise Spring Security architecture to Express & TypeScript. He is passionate about writing clean, maintainable code and solving real-world problems through technology.
+He specializes in full-stack development, with a deep focus on backend architecture, system integration, and enterprise security. Eyob is also an open-source author and developer, notably the creator of **express-spring-security**, a published NPM library bringing enterprise Spring Security architecture to Express & TypeScript. He is passionate about writing clean, maintainable code and solving real-world problems through technology.
 
 He is continuously improving his skills in advanced backend engineering, distributed systems, and security architecture, aiming to design robust, production-ready systems.
 
