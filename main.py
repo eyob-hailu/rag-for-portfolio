@@ -45,20 +45,26 @@ class Query(BaseModel):
 
 
 @app.post("/rag")
-def rag(query: Query):
+def rag(query: Query, request: Request):
     warning = None
     retrieved_from_file = False
     retrieval_message = ""
     source_items = []
     answer = None
 
+    # Pure client-side history: each tab maintains its own chat;
+    # refreshing the tab resets history and starts completely fresh.
+    active_history = []
+    if query.history:
+        active_history = [{"role": m.role, "content": m.content} for m in query.history]
+
     try:
-        # Contextual search query: if user sends a short follow-up (e.g. "yeah", "tell me more"),
+        # Contextual search query: if user sends a short follow-up (e.g. "tell me more"),
         # augment with the last user message from history for better RAG retrieval
         search_query = query.query
-        if len(search_query.split()) < 3 and query.history:
+        if len(search_query.split()) < 3 and active_history:
             last_user_msg = next(
-                (m.content for m in reversed(query.history) if m.role == "user"), None
+                (m["content"] for m in reversed(active_history) if m["role"] == "user"), None
             )
             if last_user_msg:
                 search_query = f"{last_user_msg} {search_query}"
@@ -83,7 +89,7 @@ def rag(query: Query):
             context = "\n\n".join(
                 [f"### {item['title']}\n{item['text']}" for item in retrieved_chunks]
             )
-            answer = generate_answer(context, query.query, history=query.history)
+            answer = generate_answer(context, query.query, history=active_history)
             titles = ", ".join([c["title"] for c in retrieved_chunks])
             retrieval_message = f"Retrieved {len(retrieved_chunks)} section(s) via RAG: {titles}"
 
