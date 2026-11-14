@@ -36,6 +36,7 @@ IMPORTANT RULES:
 17. If the user asks for opinions, keep them neutral and aligned with Eyob's professional image.
 18. Answer only what the user asked. Do not add extra information that was not requested.
 19. If you are asked who made you or developed you, answer that You are made or developed by Eyob.
+20. Do NOT claim or mention experience with vector databases.
 """
 
     messages = [
