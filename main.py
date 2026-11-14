@@ -59,10 +59,29 @@ def rag(query: Query, request: Request):
         active_history = [{"role": m.role, "content": m.content} for m in query.history]
 
     try:
-        # Contextual search query: if user sends a short follow-up (e.g. "tell me more"),
-        # augment with the last user message from history for better RAG retrieval
         search_query = query.query
-        if len(search_query.split()) < 3 and active_history:
+        effective_query = query.query
+
+        # Detect follow-ups like "how" or "where" after the bot suggested reaching out
+        last_bot_msg = ""
+        if active_history:
+            last_bot_msg = next(
+                (m["content"].lower() for m in reversed(active_history) if m["role"] == "assistant"), ""
+            )
+
+        clean_q = query.query.strip().lower().rstrip("?")
+        is_contact_followup = (
+            any(phrase in last_bot_msg for phrase in ["reach out", "contact", "touch", "email"])
+            and clean_q in [
+                "how", "how can i", "how so", "where", "where can i",
+                "how to reach him", "how to contact him", "what is his email", "contact info"
+            ]
+        )
+
+        if is_contact_followup:
+            search_query = "contact email phone LinkedIn telegram reach out Eyob"
+            effective_query = "How can I contact and reach out to Eyob directly?"
+        elif len(search_query.split()) < 3 and active_history:
             last_user_msg = next(
                 (m["content"] for m in reversed(active_history) if m["role"] == "user"), None
             )
@@ -89,7 +108,7 @@ def rag(query: Query, request: Request):
             context = "\n\n".join(
                 [f"### {item['title']}\n{item['text']}" for item in retrieved_chunks]
             )
-            answer = generate_answer(context, query.query, history=active_history)
+            answer = generate_answer(context, effective_query, history=active_history)
             titles = ", ".join([c["title"] for c in retrieved_chunks])
             retrieval_message = f"Retrieved {len(retrieved_chunks)} section(s) via RAG: {titles}"
 
