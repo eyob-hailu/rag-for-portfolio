@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List, Optional
 import logging
 import traceback
 
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {exc}")
@@ -31,8 +33,15 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "Internal Server Error", "error": str(exc)},
     )
 
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
 class Query(BaseModel):
     query: str
+    history: Optional[List[ChatMessage]] = []
 
 
 @app.post("/rag")
@@ -44,8 +53,18 @@ def rag(query: Query):
     answer = None
 
     try:
+        # Contextual search query: if user sends a short follow-up (e.g. "yeah", "tell me more"),
+        # augment with the last user message from history for better RAG retrieval
+        search_query = query.query
+        if len(search_query.split()) < 3 and query.history:
+            last_user_msg = next(
+                (m.content for m in reversed(query.history) if m.role == "user"), None
+            )
+            if last_user_msg:
+                search_query = f"{last_user_msg} {search_query}"
+
         # Retrieve top relevant sections via in-memory RAG
-        retrieved_chunks = retriever.retrieve(query.query, top_k=2)
+        retrieved_chunks = retriever.retrieve(search_query, top_k=2)
         retrieved_from_file = len(retrieved_chunks) > 0
 
         for chunk in retrieved_chunks:
@@ -64,7 +83,7 @@ def rag(query: Query):
             context = "\n\n".join(
                 [f"### {item['title']}\n{item['text']}" for item in retrieved_chunks]
             )
-            answer = generate_answer(context, query.query)
+            answer = generate_answer(context, query.query, history=query.history)
             titles = ", ".join([c["title"] for c in retrieved_chunks])
             retrieval_message = f"Retrieved {len(retrieved_chunks)} section(s) via RAG: {titles}"
 

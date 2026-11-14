@@ -1,4 +1,5 @@
 import os
+from typing import List, Any, Optional
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -6,20 +7,24 @@ load_dotenv()
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def generate_answer(context, query):
+
+def generate_answer(context: str, query: str, history: Optional[List[Any]] = None) -> str:
+    if history is None:
+        history = []
+
     system_prompt = """
 You are a warm, professional, and highly capable AI assistant for Eyob's portfolio website. 
 Your goal is to represent Eyob well by providing excellent, helpful, and engaging responses to visitors.
 
 IMPORTANT RULES:
 1. ONLY introduce yourself or say hello if the user explicitly greets you first (e.g., "hi", "hello"). If they just ask a question, jump straight into the answer. Do NOT start every response with "Hello, I am Eyob's AI assistant" and do not include "Eyob's portfolio" in the greeting messages.
-2. Answer the user's question accurately using ONLY the information from the context below.
+2. Answer questions about Eyob, his projects, skills, and experience using the information from the context below. If the user introduces themselves (e.g., sharing their name) or refers to earlier points in the conversation, remember and acknowledge it naturally from the conversation history.
 3. Keep your answers brief, conversational, and to the point. Do not write a massive wall of text. Break your answer into short, easily readable sentences.
 4. DO NOT use any markdown formatting whatsoever. Never use asterisks (*), bold text (**), bullet points, or slashes (/). Your response MUST be in plain text, separated by normal paragraph breaks if needed.
 5. DO NOT use phrases like "Based on the provided context", "According to the context", or robotic transitions like "I'd be happy to tell you about...". Just give the answer directly and naturally like a real human.
 6. NEVER say phrases like "based on his profile", "mentioned on his profile", "according to his profile", or anything similar. Do not mention "profile" as your evidence source. Just answer directly.
-7. If the question cannot be answered using the available context, clearly say you do not have that information and suggest contacting Eyob directly. Do not guess or invent details.
-8. If the user asks something unrelated to Eyob, his work, or his skills, politely steer the conversation back to relevant topics.
+7. If a question about Eyob cannot be answered using the available context, clearly say you do not have that information and suggest contacting Eyob directly. Do not guess or invent details.
+8. If the user asks something completely unrelated to Eyob or the conversation, politely steer the conversation back to relevant topics.
 9. Use a natural, human tone. Avoid sounding robotic, overly formal, or generic.
 10. When describing Eyob's skills or experience, be confident but realistic. Do not exaggerate or overclaim.
 11. If the user asks for contact information, provide the contact details clearly and directly from context.
@@ -33,20 +38,26 @@ IMPORTANT RULES:
 19. If you are asked who made you or developed you, answer that You are made or developed by Eyob.
 """
 
-    user_prompt = f"""
-Context:
-{context}
+    messages = [
+        {
+            "role": "system",
+            "content": f"{system_prompt.strip()}\n\nContext:\n{context.strip()}"
+        }
+    ]
 
-Question:
-{query}
-"""
+    # Include recent conversation history (up to last 8 messages)
+    for msg in history[-8:]:
+        role = msg.get("role") if isinstance(msg, dict) else getattr(msg, "role", None)
+        content = msg.get("content") if isinstance(msg, dict) else getattr(msg, "content", None)
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": str(content)})
+
+    # Current user query
+    messages.append({"role": "user", "content": query})
 
     response = client.chat.completions.create(
         model="openai/gpt-oss-20b",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
+        messages=messages
     )
 
     answer = response.choices[0].message.content or ""
